@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"time"
@@ -12,6 +14,22 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/justinas/alice"
 )
+
+type request struct {
+	ID         string      `json:"id"`
+	Dimensions []dimension `json:"dimensions"`
+}
+type dimension struct {
+	ID      string   `json:"id"`
+	Options []string `json:"options"`
+}
+type createdResponse struct {
+	ID string `json:"id"`
+}
+type statusResponse struct {
+	ID  string `json:"id"`
+	URL string `json:"url"`
+}
 
 func main() {
 	if v := os.Getenv("BIND_ADDR"); len(v) > 0 {
@@ -27,7 +45,8 @@ func main() {
 		requestID.Handler(16),
 	).Then(router)
 
-	router.HandleFunc("/", handler)
+	router.Post("/job", createHandler)
+	router.Get("/job/{id}", statusHandler)
 
 	log.Debug("Starting server", log.Data{
 		"bind_addr": config.BindAddr,
@@ -46,6 +65,57 @@ func main() {
 	}
 }
 
-func handler(w http.ResponseWriter, req *http.Request) {
+func createHandler(w http.ResponseWriter, req *http.Request) {
+	b, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(err.Error()))
+		log.ErrorR(req, err, nil)
+		return
+	}
 
+	var input request
+	err = json.Unmarshal(b, &input)
+	if err != nil {
+		w.WriteHeader(400)
+		w.Write([]byte(err.Error()))
+		log.ErrorR(req, err, nil)
+		return
+	}
+
+	response := createdResponse{
+		ID: "some-fake-id",
+	}
+
+	b, err = json.Marshal(&response)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write([]byte(err.Error()))
+		log.ErrorR(req, err, nil)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+	w.Write(b)
+}
+
+func statusHandler(w http.ResponseWriter, req *http.Request) {
+	id := req.URL.Query().Get(":id")
+	response := statusResponse{
+		ID:  id,
+		URL: "https://some.fake.url",
+	}
+
+	b, err := json.Marshal(&response)
+	if err != nil {
+		w.WriteHeader(500)
+		w.Write(b)
+		log.ErrorR(req, err, nil)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	w.Write(b)
 }
