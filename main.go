@@ -31,9 +31,11 @@ type statusResponse struct {
 	URL string `json:"url"`
 }
 
+var BindAddr = ":20000"
+
 func main() {
 	if v := os.Getenv("BIND_ADDR"); len(v) > 0 {
-		config.BindAddr = v
+		BindAddr = v
 	}
 
 	log.Namespace = "dp-dd-job-creator-api-stub"
