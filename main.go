@@ -16,8 +16,9 @@ import (
 )
 
 type request struct {
-	ID         string      `json:"id"`
-	Dimensions []dimension `json:"dimensions"`
+	ID          string      `json:"id"`
+	Dimensions  []dimension `json:"dimensions"`
+	FileFormats []string    `json:"fileFormats"`
 }
 type dimension struct {
 	ID      string   `json:"id"`

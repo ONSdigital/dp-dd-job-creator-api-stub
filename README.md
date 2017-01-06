@@ -11,7 +11,7 @@ A stub API for the Data Discovery job creator.
 
 | Environment variable | Default | Description
 | -------------------- | ------- | -----------
-| BIND_ADDR            | :8080   | The host and port to bind to
+| BIND_ADDR            | :20100  | The host and port to bind to
 
 ### Contributing
 
