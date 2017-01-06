@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/ONSdigital/go-ns/handlers/requestID"
@@ -14,6 +15,9 @@ import (
 	"github.com/gorilla/pat"
 	"github.com/justinas/alice"
 )
+
+var pending = make(map[string]bool)
+var mtx sync.Mutex
 
 type request struct {
 	ID          string      `json:"id"`
@@ -30,7 +34,7 @@ type createdResponse struct {
 type statusResponse struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
-	URL    string `json:"url"`
+	URL    string `json:"url,omitempty"`
 }
 
 var BindAddr = ":20100"
@@ -99,6 +103,16 @@ func createHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	mtx.Lock()
+	pending[response.ID] = true
+	mtx.Unlock()
+	go func() {
+		<-time.NewTimer(time.Second * 10).C
+		mtx.Lock()
+		defer mtx.Unlock()
+		delete(pending, response.ID)
+	}()
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(201)
 	w.Write(b)
@@ -108,8 +122,12 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 	id := req.URL.Query().Get(":id")
 	response := statusResponse{
 		ID:     id,
-		Status: "Complete",
-		URL:    "https://www.ons.gov.uk",
+		Status: "Pending",
+	}
+
+	if _, ok := pending[id]; !ok {
+		response.Status = "Complete"
+		response.URL = "https://www.ons.gov.uk"
 	}
 
 	b, err := json.Marshal(&response)
