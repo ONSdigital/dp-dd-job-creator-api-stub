@@ -48,6 +48,7 @@ func main() {
 
 	router := pat.New()
 	alice := alice.New(
+		corsHandler,
 		timeout.Handler(10*time.Second),
 		log.Handler,
 		requestID.Handler(16),
@@ -141,4 +142,11 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 	w.Write(b)
+}
+
+func corsHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		h.ServeHTTP(w, req)
+	})
 }
