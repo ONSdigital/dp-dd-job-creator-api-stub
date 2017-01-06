@@ -45,7 +45,7 @@ node {
         stage('Deploy') {
             sh sprintf('aws deploy create-deployment %s %s %s,bundleType=tgz,key=%s', [
                 '--application-name dp-dd-job-creator-api-stub',
-                "--deployment-group-name ${env.CODEDEPLOY_DISCOVERY_PUBLISHING_DEPLOYMENT_GROUP}",
+                "--deployment-group-name ${env.CODEDEPLOY_DISCOVERY_FRONTEND_DEPLOYMENT_GROUP}",
                 "--s3-location bucket=${env.S3_REVISIONS_BUCKET}",
                 "dp-dd-job-creator-api-stub-${revision}.tar.gz",
             ])
