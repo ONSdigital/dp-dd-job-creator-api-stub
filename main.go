@@ -32,7 +32,7 @@ type statusResponse struct {
 	URL    string `json:"url"`
 }
 
-var BindAddr = ":20000"
+var BindAddr = ":20100"
 
 func main() {
 	if v := os.Getenv("BIND_ADDR"); len(v) > 0 {
