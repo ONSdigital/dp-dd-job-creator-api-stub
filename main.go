@@ -7,10 +7,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/ONSdigital/dp-frontend-router/config"
 	"github.com/ONSdigital/go-ns/handlers/requestID"
 	"github.com/ONSdigital/go-ns/handlers/timeout"
 	"github.com/ONSdigital/go-ns/log"
+	"github.com/google/uuid"
 	"github.com/gorilla/pat"
 	"github.com/justinas/alice"
 )
@@ -27,8 +27,9 @@ type createdResponse struct {
 	ID string `json:"id"`
 }
 type statusResponse struct {
-	ID  string `json:"id"`
-	URL string `json:"url"`
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	URL    string `json:"url"`
 }
 
 var BindAddr = ":20000"
@@ -51,11 +52,11 @@ func main() {
 	router.Get("/job/{id}", statusHandler)
 
 	log.Debug("Starting server", log.Data{
-		"bind_addr": config.BindAddr,
+		"bind_addr": BindAddr,
 	})
 
 	server := &http.Server{
-		Addr:         config.BindAddr,
+		Addr:         BindAddr,
 		Handler:      alice,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -86,7 +87,7 @@ func createHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	response := createdResponse{
-		ID: "some-fake-id",
+		ID: uuid.New().String(),
 	}
 
 	b, err = json.Marshal(&response)
@@ -105,8 +106,9 @@ func createHandler(w http.ResponseWriter, req *http.Request) {
 func statusHandler(w http.ResponseWriter, req *http.Request) {
 	id := req.URL.Query().Get(":id")
 	response := statusResponse{
-		ID:  id,
-		URL: "https://some.fake.url",
+		ID:     id,
+		Status: "Complete",
+		URL:    "https://www.ons.gov.uk",
 	}
 
 	b, err := json.Marshal(&response)
