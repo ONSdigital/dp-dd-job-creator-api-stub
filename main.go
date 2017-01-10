@@ -32,7 +32,12 @@ type createdResponse struct {
 	ID string `json:"id"`
 }
 type statusResponse struct {
-	ID     string `json:"id"`
+	ID     string                `json:"id"`
+	Status string                `json:"status"`
+	Files  []*fileStatusResponse `json:"files"`
+}
+type fileStatusResponse struct {
+	Name   string `json:"name"`
 	Status string `json:"status"`
 	URL    string `json:"url,omitempty"`
 }
@@ -124,12 +129,24 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 	response := statusResponse{
 		ID:     id,
 		Status: "Pending",
+		Files: []*fileStatusResponse{
+			{Name: "example.csv", Status: "Pending"},
+			{Name: "example.xls", Status: "Pending"},
+			{Name: "example.json", Status: "Pending"},
+		},
 	}
+
+	log.Debug("test", log.Data{"response": response})
 
 	if _, ok := pending[id]; !ok {
 		response.Status = "Complete"
-		response.URL = "https://www.ons.gov.uk"
+		for _, v := range response.Files {
+			v.Status = "Complete"
+			v.URL = "https://www.ons.gov.uk"
+		}
 	}
+
+	log.Debug("test", log.Data{"response": response})
 
 	b, err := json.Marshal(&response)
 	if err != nil {
@@ -138,6 +155,8 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 		log.ErrorR(req, err, nil)
 		return
 	}
+
+	log.Debug("test", log.Data{"response": string(b)})
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
