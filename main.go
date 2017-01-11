@@ -23,6 +23,8 @@ type request struct {
 	ID          string      `json:"id"`
 	Dimensions  []dimension `json:"dimensions"`
 	FileFormats []string    `json:"fileFormats"`
+	// FIXME this can be removed once metadata api etc is working
+	S3URL string `json:"s3url"`
 }
 type dimension struct {
 	ID      string   `json:"id"`
