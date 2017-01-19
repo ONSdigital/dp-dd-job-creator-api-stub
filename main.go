@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/pat"
 	"github.com/justinas/alice"
+	"mime"
 )
 
 var pending = make(map[string]bool)
@@ -45,6 +46,9 @@ type fileStatusResponse struct {
 }
 
 var BindAddr = ":20100"
+
+const jsonMediaType = "application/json"
+const contentTypeHeader = "Content-Type"
 
 func main() {
 	if v := os.Getenv("BIND_ADDR"); len(v) > 0 {
@@ -85,6 +89,16 @@ func main() {
 }
 
 func createHandler(w http.ResponseWriter, req *http.Request) {
+	contentType, _, err := mime.ParseMediaType(req.Header.Get(contentTypeHeader))
+	if err != nil || contentType != jsonMediaType {
+		w.WriteHeader(http.StatusUnsupportedMediaType)
+		// Copy of the error message produced by the real API
+		w.Write([]byte(`{"timestamp":1484652342702,"status":415,"error":"Unsupported Media Type",` +
+			`"exception":"org.springframework.web.HttpMediaTypeNotSupportedException","message":"Content type '` +
+			contentType + `' not supported","path":"/job"}`))
+		return
+	}
+
 	b, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		w.WriteHeader(400)
