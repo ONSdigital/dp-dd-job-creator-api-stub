@@ -62,6 +62,9 @@ func main() {
 	).Then(router)
 
 	router.Post("/job", createHandler)
+	router.Options("/job", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	router.Get("/job/{id}", statusHandler)
 
 	log.Debug("Starting server", log.Data{
@@ -168,6 +171,7 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 func corsHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		h.ServeHTTP(w, req)
 	})
 }
