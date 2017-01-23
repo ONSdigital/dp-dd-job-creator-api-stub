@@ -150,8 +150,8 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 		Status: "Pending",
 		Files: []*fileStatusResponse{
 			{Name: "example.csv", Status: "Pending"},
-			{Name: "example.xls", Status: "Pending"},
-			{Name: "example.json", Status: "Pending"},
+			//{Name: "example.xls", Status: "Pending"},
+			//{Name: "example.json", Status: "Pending"},
 		},
 	}
 
