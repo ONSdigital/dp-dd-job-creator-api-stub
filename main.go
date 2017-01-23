@@ -132,7 +132,7 @@ func createHandler(w http.ResponseWriter, req *http.Request) {
 	pending[response.ID] = true
 	mtx.Unlock()
 	go func() {
-		<-time.NewTimer(time.Second * 10).C
+		<-time.NewTimer(time.Second * 4).C
 		mtx.Lock()
 		defer mtx.Unlock()
 		delete(pending, response.ID)
